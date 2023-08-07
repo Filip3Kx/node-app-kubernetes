@@ -2,7 +2,7 @@
 
 Forked this repository to play around while learning kubernetes.
 
-Here are all the [definition files](https://github.com/Filip3Kx/node-app-kubernetes/kubernetes)
+Here are all the [definition files](https://github.com/Filip3Kx/node-app-kubernetes/tree/main/kubernetes)
 
 - Database ClusterIP
 - App LoadBalancer
