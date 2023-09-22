@@ -26,6 +26,7 @@ module "gke" {
             max_count = 5
             auto_upgrade = true
             machine_type = "n1-standard-1"
+            disk_size_gb = 10
         }
     ]
     node_pools_tags = {
