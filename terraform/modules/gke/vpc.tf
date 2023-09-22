@@ -21,7 +21,31 @@ resource "google_compute_subnetwork" "node-app-subnetwork" {
 
 
 #Terraform doesn't see the subnetwork without the sleep function =P
-resource "time_sleep" "wait 30 seconds" {
+resource "time_sleep" "sleep_180" {
     depends_on = [ google_compute_subnetwork.node-app-subnetwork ]
-    create_duration = "30s"
+    create_duration = "180s"
+}
+
+
+resource "google_compute_firewall" "ssh-rule" {
+  name = "terraform-ssh"
+  network = google_compute_network.node-app-vpc.name
+  allow {
+    protocol = "tcp"
+    ports = ["22"]
+  }
+  target_tags = ["allow-ssh"]
+  source_ranges = ["0.0.0.0/0"]
+}
+
+
+resource "google_compute_firewall" "http-rule" {
+  name = "terraform-http"
+  network = google_compute_network.node-app-vpc.name
+  allow {
+    protocol = "tcp"
+    ports = ["80"]
+  }
+  target_tags = ["allow-http"]
+  source_ranges = ["0.0.0.0/0"]
 }
