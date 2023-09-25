@@ -2,6 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: node-app
   name: app-node-deployment
   labels:
     app: node
@@ -59,7 +60,7 @@ spec:
         ports:
         - containerPort: 3000
         - containerPort: 9229
-        - cotnainerPort: 9230
+        - containerPort: 9230
       volumes:
       - name: node-volume
         hostPath:
@@ -71,5 +72,5 @@ spec:
           type: File
       - name: package-lock-volume
         hostPath:
-          path: /app/node-app-kubernetes/package-lock.json # Insert the right path
+          path: /var/node-app-kubernetes/package-lock.json # Insert the right path
           type: File
