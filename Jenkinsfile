@@ -4,8 +4,8 @@
 pipeline {
     agent any
     environment {
-        git_repo = "dev"
-        git_branch = "https://github.com/Filip3Kx/node-app-kubernetes"
+        git_repo = "https://github.com/Filip3Kx/node-app-kubernetes"
+        git_branch = "dev"
         registry_name = "tobedone"
         registry_credential = 'artifact_registry'
     }
@@ -16,24 +16,33 @@ pipeline {
             }
         }
         stage("Run unit tests") {
-            sh 'docker compose exec node npm test' //run unit test on containers from compose
-            //get logs
-            sh 'docker compose down'
-        }
-        stage("Build docker app image") {
-            script {
-                dockerImage = docker.build registry + ":$BUILD_NUMBER"
+            steps {
+                sh 'docker compose up'
+                sh 'docker compose exec node npm test' //run unit test on containers from compose
+                //get logs
+                sh 'docker compose logs > docker_test.txt'
+                sh 'docker compose down'
             }
         }
+        stage("Build docker app image") {
+            steps {
+                script {
+                    dockerImage = docker.build registry + ":$BUILD_NUMBER"
+                }    
+            }   
+        }
         stage("Push image to Artifact Registry") {
-            script {
-                docker.withRegistry( '', registryCredential ) {
-                dockerImage.push()
+            steps {
+                script {
+                    docker.withRegistry( '', registryCredential ) {
+                    dockerImage.push()
                 }
+            }    
             }
         }
         stage("Deploy to GKE cluster") {
             steps{
+                sh "echo Deploying"
                 //login to cluster
                 //change image on app object
                 //kubectl describe to logs
@@ -41,6 +50,7 @@ pipeline {
         }
         stage("Upload logs to GCS Bucket") {
             steps{
+                sh "echo Uploading"
                 //GCS Upload
             }
         }
