@@ -7,6 +7,7 @@ pipeline {
         git_repo = "https://github.com/Filip3Kx/node-app-kubernetes"
         git_branch = "dev"
         registry_url = "europe-west1-docker.pkg.dev"
+        registry_path = "/node-app-399813/node-app/"
     }
     stages{
         stage("Clone repo to local") {
@@ -18,20 +19,20 @@ pipeline {
             steps {
                 sh 'docker compose up -d'
                 sh 'sleep 10'
-                sh 'docker compose exec node npm test' //run unit test on containers from compose
+                sh 'docker compose exec node npm test > docker_test.txt' //run unit test on containers from compose
                 //get logs
-                sh 'docker compose logs > docker_test.txt'
+                sh 'docker compose logs > docker_logs.txt'
                 sh 'docker compose down'
             }
         }
         stage("Push image to Artifact Registry") {
             steps {
-                sh "gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://europe-west1-docker.pkg.dev"
-                sh "docker tag node-app-node:latest europe-west1-docker.pkg.dev/node-app-399813/node-app/node-app-node:latest"
-                sh "docker push europe-west1-docker.pkg.dev/node-app-399813/node-app/node-app-node:latest"
+                sh "gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://${registry_url}"
+                sh "docker tag node-app-node:latest ${registry_url}${registry_path}node-app-node:latest"
+                sh "docker push ${registry_url}${registry_path}node-app-node:latest"
                 
-                sh "docker tag node-app-node:latest europe-west1-docker.pkg.dev/node-app-399813/node-app/node-app-node:${BUILD_ID}"
-                sh "docker push europe-west1-docker.pkg.dev/node-app-399813/node-app/node-app-node:${BUILD_ID}"
+                sh "docker tag node-app-node:latest ${registry_url}${registry_path}node-app-node:${BUILD_ID}"
+                sh "docker push ${registry_url}${registry_path}node-app-node:${BUILD_ID}"
                 
             }    
         }
@@ -52,8 +53,8 @@ pipeline {
         stage("Cleanup") {
             steps{
                 sh "docker rmi node-app-node"
-                sh "docker rmi europe-west1-docker.pkg.dev/node-app-399813/node-app/node-app-node:latest"
-                sh "docker rmi europe-west1-docker.pkg.dev/node-app-399813/node-app/node-app-node:${BUILD_ID}"
+                sh "docker rmi ${registry_url}${registry_path}node-app-node:latest"
+                sh "docker rmi ${registry_url}${registry_path}node-app-node:${BUILD_ID}"
             }
         }
     }
