@@ -15,3 +15,6 @@ Here are all the [definition files](https://github.com/Filip3Kx/node-app-kuberne
 
 ![image](https://github.com/Filip3Kx/node-app-kubernetes/assets/114138650/d874de5b-ffb4-4cf0-99de-c8a16fca166c)
 
+![image](https://github.com/Filip3Kx/node-app-kubernetes/assets/114138650/2de0ceb8-b50e-4481-aca5-0f55f64c4381)
+
+
