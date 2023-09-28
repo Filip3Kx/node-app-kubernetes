@@ -19,8 +19,7 @@ Everything considering the application can be created using the provided [terraf
 After deploying the [app on Kubernetes](https://github.com/Filip3Kx/node-app-kubernetes/tree/main/kubernetes) for the first time the app image will get updated from the pipeline.
 ![image](https://github.com/Filip3Kx/node-app-kubernetes/assets/114138650/5736edcb-dc0f-422e-8f13-2ea48e9cb5d8)
 
-=======
-Here are all the [definition files](https://github.com/Filip3Kx/node-app-kubernetes/tree/main/kubernetes)
+
 
 
 
