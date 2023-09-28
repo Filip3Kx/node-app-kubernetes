@@ -2,11 +2,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata: 
+  namespace: node-app
   name: app-configmap
 data:
   NODE_ENV: "development"
   MONGO_USERNAME: "root"
-  MONGO_HOSTNAME: "mongo"
+  MONGO_HOSTNAME: "app-db-service"
   MONGO_PORT: "27017"
   MONGO_DATABASE_NAME: "app-db"
   MONGO_INITDB_ROOT_USERNAME: "root"

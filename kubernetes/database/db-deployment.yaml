@@ -1,8 +1,21 @@
-#will be made into a remote gcs volume
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: node-app
+  name: node-app-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi
+  storageClassName: standard-rwo
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
+  namespace: node-app
   name: app-db-statefulset
   labels:
     app: db
@@ -20,7 +33,7 @@ spec:
       - name: app-db-pod
         image: mongo:4
         ports:
-          containerPort: 27017
+          - containerPort: 27017
         env:
         - name: MONGO_INITDB_ROOT_USERNAME
           valueFrom:
@@ -38,11 +51,10 @@ spec:
               name: app-configmap
               key: MONGO_INITDB_DATABASE
         volumeMounts:
-        - name: db-volume
-          mountPath: /docker-entrypoint-initdb.d/seed.js
+        - name: node-app-volume
+          mountPath: /data  # Mount point in the container
       
       volumes:
-      - name: db-volume
-        hostPath:
-          path: /var/node-app-kubernetes/database/seed.js # Insert the right path to seed.js
-          type: File
+      - name: node-app-volume
+        persistentVolumeClaim:
+          claimName: node-app-pvc
