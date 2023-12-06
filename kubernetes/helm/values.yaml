@@ -1,0 +1,14 @@
+namespace: prod
+
+app:
+  image: filip3k/app-node-pod:latest
+  replicas: 3
+  port: 3000
+
+db:
+  port: 27017
+  image: mongo:4
+  passwd: ZXhhbXBsZQ==
+  name: "app-db" 
+  user: "root"
+  replicas: 1

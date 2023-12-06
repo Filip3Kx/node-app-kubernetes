@@ -1,0 +1,153 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: node-app
+  labels:
+    name: node-app
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: 
+  namespace: node-app
+  name: app-configmap
+data:
+  NODE_ENV: "development"
+  MONGO_USERNAME: "root"
+  MONGO_HOSTNAME: "app-db-service"
+  MONGO_PORT: "27017"
+  MONGO_DATABASE_NAME: "app-db"
+  MONGO_INITDB_ROOT_USERNAME: "root"
+  MONGO_INITDB_DATABASE: "app-db"
+---
+apiVersion: v1
+kind: Secret
+metadata: 
+  namespace: node-app
+  name: app-secret
+type: Opaque
+data:
+  MONGO_PASSWORD: ZXhhbXBsZQ==
+  MONGO_INITDB_ROOT_PASSWORD: ZXhhbXBsZQ==
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: node-app
+  name: app-db-service
+spec:
+  ports:
+    - targetPort: 27017
+      port: 27017
+      protocol: TCP
+  selector:
+    app: db
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: node-app
+  name: app-db-statefulset
+  labels:
+    app: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+      - name: app-db-pod
+        image: mongo:4
+        ports:
+          - containerPort: 27017
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-configmap
+              key: MONGO_INITDB_ROOT_USERNAME
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: MONGO_INITDB_ROOT_PASSWORD
+        - name: MONGO_INITDB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: app-configmap
+              key: MONGO_INITDB_DATABASE
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: node-app
+  name: app-node-service
+spec:
+  selector:
+    app: node
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3000
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: node-app
+  name: app-node-deployment
+  labels:
+    app: node
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: node
+  template:
+    metadata:
+      labels:
+        app: node
+    spec:
+      containers:
+      - name: app-node-pod
+        image: filip3k/app-node-pod:latest
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: app-configmap
+              key: NODE_ENV
+        - name: MONGO_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-configmap
+              key: MONGO_USERNAME
+        - name: MONGO_HOSTNAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-configmap
+              key: MONGO_HOSTNAME
+        - name: MONGO_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: app-configmap
+              key: MONGO_PORT
+        - name: MONGO_DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-configmap
+              key: MONGO_DATABASE_NAME
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: MONGO_PASSWORD
+        ports:
+        - containerPort: 3000
+        - containerPort: 9229
+        - containerPort: 9230

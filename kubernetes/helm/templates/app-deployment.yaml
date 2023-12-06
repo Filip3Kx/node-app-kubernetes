@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: app-node-deployment
+  labels:
+    app: node
+spec:
+  replicas: {{ .Values.app.replicas }}
+  selector:
+    matchLabels:
+      app: node
+  template:
+    metadata:
+      labels:
+        app: node
+    spec:
+      containers:
+      - name: app-node-pod
+        image: {{ .Values.app.image }}
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: app-configmap
+              key: NODE_ENV
+        - name: MONGO_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-configmap
+              key: MONGO_USERNAME
+        - name: MONGO_HOSTNAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-configmap
+              key: MONGO_HOSTNAME
+        - name: MONGO_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: app-configmap
+              key: MONGO_PORT
+        - name: MONGO_DATABASE_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-configmap
+              key: MONGO_DATABASE_NAME
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: MONGO_PASSWORD
+        ports:
+        - containerPort: {{ .Values.app.port }}
+        - containerPort: 9229
+        - containerPort: 9230
