@@ -1,0 +1,58 @@
+stages:
+  - validate
+  - test
+  - build
+
+validate-files-exist:
+  stage: validate
+  image: alpine
+  script: 
+    #Check if main files exist
+    - test -f ./Dockerfile
+    - test -f ./index.js
+    - test -f ./test/sample.js
+    - test -f ./docker-compose.yml
+    - test -f ./kubernetes/ns.yaml
+
+validate-dependencies:
+  stage: validate
+  image: alpine
+  script:
+    - grep node-docker-good-defaults package.json
+  
+unit-tests:
+  stage: test
+  image: docker/compose
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    FILE_NAME: test-raport.txt
+  services:
+  - docker:dind
+  script: 
+    - docker version > ${FILE_NAME}
+    - docker-compose version >> ${FILE_NAME}
+    - docker-compose up -d
+    - sleep 10
+    - docker-compose exec -T node npm test >> ${FILE_NAME}
+    - docker-compose logs >> ${FILE_NAME}
+    - docker-compose down
+  artifacts:
+    paths:
+      - ./test-raport.txt
+
+build-and-push-image:
+  stage: build
+  image: docker/compose
+  variables: 
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    DOCKER_REPO: registry.gitlab.com/filip3kx/node-app-kubernetes
+  services:
+  - docker:dind
+  script:
+    - docker login registry.gitlab.com --username filip3kx --password $DOCKER_PASS
+    - docker build -t ${DOCKER_REPO} .
+    - docker push ${DOCKER_REPO}
+    - docker build -t "${DOCKER_REPO}:${CI_COMMIT_SHA}" .
+    - docker push "${DOCKER_REPO}:${CI_COMMIT_SHA}"
